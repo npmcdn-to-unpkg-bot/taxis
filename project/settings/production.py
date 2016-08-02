@@ -139,12 +139,12 @@ USE_TZ = True
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "admin_taxis_static")
+STATIC_ROOT = '/home/fabgarsan/webapps/admin_taxis_static'
 
 STATIC_MEDIA = '/media/'
-MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "admin_taxis_media")
+MEDIA_ROOT = '/home/fabgarsan/webapps/admin_taxis_media'
+
 
 #Crispy FORM TAGs SETTINGS
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
