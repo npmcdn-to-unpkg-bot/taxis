@@ -1,0 +1,9 @@
+db.sqlite3
+local.py
+passwords.py
+webfactional/
+migirations/**
+.idea/**
+vcs.xml
+__pycache__/
+migrations/

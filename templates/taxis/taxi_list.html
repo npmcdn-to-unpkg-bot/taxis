@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load l10n %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-5 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
+            <h2>Entregas <a href="{% url 'entregas:entrega-create' %}" class="fa fa-plus-square"></a>
+            </h2>
+            <table class="collaptable table">
+                <tr class="act-tr-level-undefined">
+                    <th class="text-left">Taxi</th>
+                    <th class="text-right">Fecha</th>
+                    <th class="text-right">Valor</th>
+                    <th class="text-right">Estado</th>
+                </tr>
+                {% for taxi in object_list %}
+                    {% if taxi.entrega_set.count > 0 %}
+                        <tr style="font-size: x-large" data-id="tax-{{ taxi.id }}" data-parent="">
+                            <td>{{ taxi }}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% for entrega in taxi.entrega_set.all %}
+                            <tr style="background-color: lightgray;font-size: medium" data-id="ent-{{ entrega.id }}"
+                                data-parent="tax-{{ taxi.id }}">
+                                <td><a href="{{ entrega.get_absolute_url }}">{{ entrega.fecha|date:"M d, Y" }}</a></td>
+                                <td class="text-right">{{ entrega.fecha|date:"M d, Y" }}</td>
+                                <td class="text-right">{{ entrega.total|floatformat }}</td>
+                                <td class="text-right">{{ entrega.get_status_display }}</td>
+                            </tr>
+
+
+                            {% for concepto in entrega.concepto_set.all %}
+                                <tr data-id="con-{{ concepto.id }}" data-parent="ent-{{ entrega.id }}">
+                                    <td></td>
+                                    <td class="text-right">{{ concepto.fecha|date:"M d, Y" }}</td>
+                                    {% if concepto.tipo.ingreso %}
+                                        <td class="text-right">
+                                            {{ concepto.valor|floatformat }}
+                                        </td>
+                                    {% else %}
+                                        <td class="text-right" style="color: red">
+                                            ({{ concepto.valor|floatformat }})
+                                        </td>
+                                    {% endif %}
+                                    <td class="text-right">{{ concepto.tipo }}</td>
+                                </tr>
+                            {% endfor %}
+
+
+
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-pull-0">
+            <h2>Informacion General</h2>
+        </div>
+    </div>
+{% endblock %}
+<script>
+    {% block jquery %}
+        $('.collaptable').aCollapTable({
+
+// the table is collapased at start
+            startCollapsed: true,
+
+// the plus/minus button will be added like a column
+            addColumn: true,
+
+// The expand button ("plus" +)
+            plusButton: '<span class="i">+</span>',
+
+// The collapse button ("minus" -)
+            minusButton: '<span class="i">-</span>'
+
+        });
+
+    {% endblock %}
+</script>

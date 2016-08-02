@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
+            <h2>Entregas <a href="{% url 'entregas:entrega-create' %}" class="fa fa-plus-square"></a>
+            </h2>
+            <table class="table table-striped">
+                {% for entrega in object_list %}
+                    <tr>
+                        <td>
+                            <a href="{{ entrega.get_absolute_url }}">{{ entrega }}</a>
+                        </td>
+                        {#            <li>{{ article.pub_date|date }} - {{ article.headline }}</li>#}
+                        {#        {% empty %}#}
+                        {#            <li>No articles yet.</li>#}
+                        <td>{{ entrega.status }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-pull-0">
+            <h2>Informacion General</h2>
+        </div>
+    </div>
+{% endblock %}

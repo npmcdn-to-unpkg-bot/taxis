@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load l10n %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-10 col-sm-4 col-xs-offset-1">
+
+            <h1>Entrega
+                <small><span class="lead" style="color: indianred">({{ object.get_status_display }})</span></small>
+                {% if conceptos_eliminables %}
+                    <form method="POST" action="{% url 'entregas:entrega-delete' %}">
+                        {% csrf_token %}
+                        <input name="id_ent" type="hidden" value="{{ object.id }}"/>
+                        <button type="submit" class="fa fa-trash fa-2x "></button>
+                    </form>
+                {% endif %}
+            </h1>
+            <p>
+            <h4><span>Taxi: </span>
+                <small><span class="lead"> {{ object.taxi }} </span></small>
+            </h4>
+            </p>
+            <p>
+            <h4><span>Fecha de entrega: </span>
+                <small><span class="lead"> {{ object.fecha }} </span></small>
+            </h4>
+            </p>
+            <p>
+            <h4><span>Conductor: </span>
+                <small><span class="lead"> {{ object.taxi.conductor }} {{ object.taxi.user.last_name }} </span></small>
+            </h4>
+            </p>
+            <p>
+            <h4><span>Entrega ($): </span>
+                <small><span class="lead"> {{ object.total }} </span></small>
+            </h4>
+            </p>
+        </div>
+
+        <div class="col-xs-10 col-sm-5 col-xs-offset-1 col-sm-offset-0">
+            <h2>Conceptos</h2>
+            <h5>
+                <table id="concepts_table" class="table">
+                    {% for concepto in object.concepto_set.all %}
+                        {% cycle 'row1' 'row2' as rowcolors silent %}
+                        <tr id="concept-item-{{ concepto.id }}">
+                            <td>{{ concepto.fecha }}</td>
+                            {% if concepto.tipo.ingreso %}
+                                <td style="color: blue">{{ concepto.tipo }}</td>
+                            {% else %}
+                                <td style="color: red">{{ concepto.tipo }}</td>
+                            {% endif %}
+
+                            <td class="text-right">{{ concepto.valor|floatformat }}</td>
+
+                            <td>
+                                {% if conceptos_eliminables %}
+                                    <form method="POST" action="{% url 'entregas:concepto-delete' %}">
+                                        {% csrf_token %}
+                                        <input name="id_concept" type="hidden" value="{{ concepto.id }}"/>
+                                        <button type="submit" class="fa fa-trash fa-2x"></button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr style="color: blue">
+                        <td colspan="2">
+                            Ingresos
+                        </td>
+                        <td class="text-right">
+                            {{ object.total_ingreso|floatformat }}
+                        </td>
+                    </tr>
+                    <tr style="color: red">
+                        <td colspan="2">
+                            Gastos
+                        </td>
+                        <td class="text-right">
+                            {{ object.total_gasto|floatformat }}
+                        </td>
+                    </tr>
+                    <tr style="background-color: black; color: white">
+                        <td colspan="2">
+                            Total
+                        </td>
+                        <td class="text-right">
+                            {{ object.total|floatformat }}
+                        </td>
+                    </tr>
+                </table>
+            </h5>
+            <hr/>
+            {% if conceptos_eliminables %}
+                <div>
+                    <h4>Nuevo Concepto</h4>
+
+                    <form id="form_new_concepto" action="{% url 'entregas:concepto-create' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="conceptos_eliminables" value="{{ conceptos_eliminables }}">
+                        <input type="hidden" name="id_ent" value="{{ object.id }}">
+                        {{ form_new_concepto.as_p }}
+                        <input id="save_concepto" type="submit" value="Guardar"/>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {{ form_new_concepto2.as_p }}
+
+{% endblock %}
+
+<script>
+    {% block jquery %}
+        {#        function add_new_concept(date, type, amount) {#}
+        {#            $(("#concepts_table")).prepend("<tr> <td>" + date + "</td> <td>" + type + "</td> <td>" + amount + "</td> <tr/>")#}
+        {#        }#}
+        {##}
+        {#        $("#save_concepto").click(function (event) {#}
+        {#                        $(this).next(".item-update").fadeIn()#}
+        {#            event.preventDefault()#}
+        {#            var formData = $("#form_new_concepto").serialize()#}
+        {#            console.log(formData)#}
+        {##}
+        {#            $.ajax(#}
+        {#                    {#}
+        {#                        type: "POST",#}
+        {#                        url: "{% url 'entregas:concepto-create' %}",#}
+        {#                        data: formData,#}
+        {#                        success: function (data) {#}
+        {#                            if (data.is_valid == false) {#}
+        {#                                $("#new_concept_error").text("")#}
+        {#                                $.each(data.errors, function (i, obj) {#}
+        {#                                    $("#new_concept_error").append("<h5 style='color: red'>* " + i.toUpperCase() + "<small> : " + obj + " <small><h3/>")#}
+        {#                                    $("#new_concept_error").focus()#}
+        {#                                });#}
+        {#                            }#}
+        {#                            else {#}
+        {#                                add_new_concept(data.fecha, data.tipo, data.valor)#}
+        {#                                $("#new_concept_error").text()#}
+        {#                            }#}
+        {#                        },#}
+        {#                        error: function (response, error) {#}
+        {#                        },#}
+        {#                        complete: function (data) {#}
+        {#                        }#}
+        {#                    }#}
+        {#            ).fail(function (data) {#}
+        {#                alert(data)#}
+        {#                console.log(data)#}
+        {#            })#}
+        {#        });#}
+
+    {% endblock %}
+</script>
+
+{#    entrega = models.ForeignKey(Entrega, on_delete=models.CASCADE)#}
+{#    tipo = models.ForeignKey(ConceptoTipo, on_delete=models.PROTECT)#}
+{#    timespam_creation = models.DateTimeField(auto_now_add=True, auto_now=False)#}
+{#    timespam_update = models.DateTimeField(auto_now_add=False, auto_now=True)#}
+{#    descripcion = models.TextField(max_length=200, blank=True, null=True)#}
+{#    fecha = models.DateField()#}
+{#    imagen = models.ImageField(blank=True, null=True)#}
+{#    valor = models.DecimalField(max_digits=10, decimal_places=2, default=0)#}
