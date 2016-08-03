@@ -61,14 +61,6 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
                         entrega.status = 6
                         entrega.save()
 
-                send_mail(
-                    subject='Prueba Envio Entrega',
-                    message='Una entrega se ha generado',
-                    from_email='fabio.garcia.sanchez@gmail.com',
-                    recipient_list=['fabio.garcia.sanchez@gmail.com'],
-                    fail_silently=False,
-                )
-
         return redirect(entrega)
 
 
