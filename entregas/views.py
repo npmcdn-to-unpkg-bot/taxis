@@ -15,16 +15,15 @@ from taxis.models import Taxi
 from users.mixin import LoginRequiredMixin
 
 
-class EntregaUpdateAtributos(LoginRequiredMixin,View):
+class EntregaUpdateAtributos(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         current_user = self.request.user
 
         if current_user.is_authenticated():
+            id_ent = self.request.POST.get("id_ent")
+            entrega = get_object_or_404(Entrega, id=id_ent)
 
             if request.POST.get("tipo_update") == "validar_token":
-                id_ent = self.request.POST.get("id_ent")
-                entrega = get_object_or_404(Entrega, id=id_ent)
-
                 token = request.POST.get("num_token")
 
                 if entrega.token == int(token):
@@ -41,9 +40,6 @@ class EntregaUpdateAtributos(LoginRequiredMixin,View):
                         entrega.save()
 
             if request.POST.get("tipo_update") == "siguiente_estado":
-
-                id_ent = self.request.POST.get("id_ent")
-                entrega = get_object_or_404(Entrega, id=id_ent)
 
                 if entrega.get_es_mi_entrega(current_user):
                     if entrega.status == "1":
@@ -65,6 +61,7 @@ class EntregaUpdateAtributos(LoginRequiredMixin,View):
                         entrega.save()
 
         return redirect(entrega)
+
 
 class EntregaListView(LoginRequiredMixin, ListView):
     model = Entrega
@@ -105,6 +102,9 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                 conceptos_eliminables = True
 
             if entrega.status == "2":
+                mostrar_token = True
+
+            if entrega.status == "26":
                 mostrar_token = True
 
         if entrega.get_es_mi_entrega_administrado(self.request.user):

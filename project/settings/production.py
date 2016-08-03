@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-from project.settings.passwords import BD_NAME, BD_USER, BD_PASSWORD
+from project.settings.passwords import BD_NAME, BD_USER, BD_PASSWORD,EMAIL_PASS,EMAIL_DIR
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -28,6 +28,19 @@ SECRET_KEY = '(w973*(jx)vh48*cfcba5^qx&@mvdlmb9v6u_089o@r=_emt0-'
 DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ['cfedeploy.webfactional.com', 'trydjango.com', 'www.trydjango.com']
+# purchasing domain name http://name.com
+
+
+ADMINS = (
+    ("Fabio", EMAIL_DIR),
+)
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = EMAIL_DIR
+EMAIL_HOST_PASSWORD = EMAIL_PASS
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 
 # Application definition
