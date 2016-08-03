@@ -15,55 +15,54 @@ from taxis.models import Taxi
 from users.mixin import LoginRequiredMixin
 
 
-class EntregaUpdateAtributos(LoginRequiredMixin, View):
+class EntregaUpdateAtributos(View):
     def post(self, request, *args, **kwargs):
-
         current_user = self.request.user
 
-        if request.POST.get("tipo_update") == "validar_token":
-            id_ent = self.request.POST.get("id_ent")
-            entrega = get_object_or_404(Entrega, id=id_ent)
+        if current_user.is_authenticated():
 
-            token = request.POST.get("num_token")
+            if request.POST.get("tipo_update") == "validar_token":
+                id_ent = self.request.POST.get("id_ent")
+                entrega = get_object_or_404(Entrega, id=id_ent)
 
-            if entrega.token == int(token):
-                entrega.actual_poseedor = current_user
+                token = request.POST.get("num_token")
 
-                if entrega.taxi.es_administrador(current_user):
-                    entrega.status = 3
-                    entrega.token = random.randint(10000, 99999)
-                    entrega.save()
+                if entrega.token == int(token):
+                    entrega.actual_poseedor = current_user
 
-                if entrega.taxi.es_propietario(current_user):
-                    entrega.status = 4
-                    entrega.token = random.randint(10000, 99999)
-                    entrega.save()
+                    if entrega.taxi.es_administrador(current_user):
+                        entrega.status = 3
+                        entrega.token = random.randint(10000, 99999)
+                        entrega.save()
 
-            return redirect(entrega)
+                    if entrega.taxi.es_propietario(current_user):
+                        entrega.status = 4
+                        entrega.token = random.randint(10000, 99999)
+                        entrega.save()
 
-        if request.POST.get("tipo_update") == "siguiente_estado":
+            if request.POST.get("tipo_update") == "siguiente_estado":
 
-            id_ent = self.request.POST.get("id_ent")
-            entrega = get_object_or_404(Entrega, id=id_ent)
+                id_ent = self.request.POST.get("id_ent")
+                entrega = get_object_or_404(Entrega, id=id_ent)
 
-            if entrega.get_es_mi_entrega(current_user):
-                if entrega.status == "1":
-                    token = random.randint(10000, 99999)
-                    entrega.token = token
-                    entrega.status = 2
-                    entrega.save()
+                if entrega.get_es_mi_entrega(current_user):
+                    if entrega.status == "1":
+                        token = random.randint(10000, 99999)
+                        entrega.token = token
+                        entrega.status = 2
+                        entrega.save()
 
-            if entrega.get_es_mi_entrega_administrado(current_user):
-                if entrega.actual_poseedor == current_user:
-                    token = random.randint(10000, 99999)
-                    entrega.token = token
-                    entrega.status = 5
-                    entrega.save()
+                if entrega.get_es_mi_entrega_administrado(current_user):
+                    if entrega.actual_poseedor == current_user:
+                        token = random.randint(10000, 99999)
+                        entrega.token = token
+                        entrega.status = 5
+                        entrega.save()
 
-            if entrega.get_es_mi_entrega_propietario(current_user):
-                if entrega.actual_poseedor == current_user:
-                    entrega.status = 6
-                    entrega.save()
+                if entrega.get_es_mi_entrega_propietario(current_user):
+                    if entrega.actual_poseedor == current_user:
+                        entrega.status = 6
+                        entrega.save()
 
             return redirect(entrega)
         else:
@@ -210,10 +209,11 @@ class ConceptoCreateView(LoginRequiredMixin, CreateView):
 
 class ConceptoDeleteView(LoginRequiredMixin, DeleteView):
     def post(self, request, *args, **kwargs):
-        id_concepto = self.request.POST.get("id_concept")
-        concepto = get_object_or_404(Concepto, id=id_concepto)
-        entrega = concepto.entrega
-        concepto.delete()
+        if request.user.is_authenticated():
+            id_concepto = self.request.POST.get("id_concept")
+            concepto = get_object_or_404(Concepto, id=id_concepto)
+            entrega = concepto.entrega
+            concepto.delete()
         return redirect(entrega)
 
 
