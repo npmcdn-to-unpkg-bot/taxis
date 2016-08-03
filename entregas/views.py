@@ -15,7 +15,7 @@ from taxis.models import Taxi
 from users.mixin import LoginRequiredMixin
 
 
-class EntregaUpdateAtributos(View):
+class EntregaUpdateAtributos(LoginRequiredMixin,View):
     def post(self, request, *args, **kwargs):
         current_user = self.request.user
 
@@ -64,10 +64,7 @@ class EntregaUpdateAtributos(View):
                         entrega.status = 6
                         entrega.save()
 
-            return redirect(entrega)
-        else:
-            raise Http404
-
+        return redirect(entrega)
 
 class EntregaListView(LoginRequiredMixin, ListView):
     model = Entrega
