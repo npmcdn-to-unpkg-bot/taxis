@@ -1,3 +1,7 @@
+from decimal import Decimal
+from django.core.validators import MinValueValidator
+from django.utils import timezone
+
 from django.db.models.signals import post_save, pre_delete
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -19,6 +23,11 @@ STATUS_CHOICES = (
     ('7', 'Rechazada'),
 )
 
+def entrega_upload_to(instance, filename):
+    id_user = instance.conductor.user.id
+    basename, file_extention = filename.split(".")
+    new_filename = "%s_%s.%s" % (instance.id, basename, file_extention)
+    return "user/entrega/%s/%s" % (id_user, new_filename)
 
 class EntregaoManager(models.Manager):
     def get_queryset(self):
@@ -53,7 +62,9 @@ class Entrega(models.Model):
 
     actual_poseedor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="usuario_tiene_entrega")
     token = models.PositiveSmallIntegerField(null=True, blank=True)
-    fecha = models.DateField()
+    fecha = models.DateField(default=timezone.now)
+
+    imagen = models.ImageField(blank=True, upload_to=entrega_upload_to)
 
     timespam_creation = models.DateTimeField(auto_now_add=True, auto_now=False)
     timespam_update = models.DateTimeField(auto_now_add=False, auto_now=True)
@@ -105,9 +116,9 @@ class Concepto(models.Model):
     timespam_creation = models.DateTimeField(auto_now_add=True, auto_now=False)
     timespam_update = models.DateTimeField(auto_now_add=False, auto_now=True)
     descripcion = models.TextField(max_length=200, blank=True, null=True)
-    fecha = models.DateField()
+    fecha = models.DateField(default=timezone.now)
     imagen = models.ImageField(blank=True, null=True)
-    valor = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    valor = models.DecimalField(max_digits=10, decimal_places=2, default=0,validators=[MinValueValidator(Decimal('0.01'))])
 
     objects = ConceptoManager()
 

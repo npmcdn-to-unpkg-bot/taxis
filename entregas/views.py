@@ -100,6 +100,7 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
         mostrar_token = False
         mostrar_pedir_token = False
         mostrar_boton_aceptar = False
+        mostrar_actual_poseedor = False
 
         if entrega.get_es_mi_entrega(self.request.user):
             if entrega.status == "1":
@@ -111,7 +112,7 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                 mostrar_token = True
 
         if entrega.get_es_mi_entrega_administrado(self.request.user):
-
+            mostrar_actual_poseedor = True
             if entrega.status == "5":
                 mostrar_token = True
             if entrega.status == "2":
@@ -123,6 +124,7 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                 mostrar_boton_aceptar = True
 
         if entrega.get_es_mi_entrega_propietario(self.request.user):
+            mostrar_actual_poseedor = True
             if entrega.status == "2":
                 mostrar_pedir_token = True
                 siguiente_estado = 4
@@ -135,12 +137,8 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                 siguiente_estado = 6
                 mostrar_boton_aceptar = True
 
-        # if taxi.es_administrador(self.request.user) and entrega.status == "2":
-        #     conceptos_eliminables = True
-        #
-        # if taxi.es_propietario(self.request.user) and int(entrega.status) > 1:
-        #     conceptos_eliminables = True
-
+        contexto["mostrar_actual_poseedor"] = mostrar_actual_poseedor
+        contexto["mostrar_boton_aceptar"] = mostrar_boton_aceptar
         contexto["mostrar_pedir_token"] = mostrar_pedir_token
         contexto["mostrar_token"] = mostrar_token
         contexto["siguiente_estado"] = siguiente_estado
@@ -158,6 +156,8 @@ class EntregaCreateView(LoginRequiredMixin, CreateView):
         user = self.request.user
         qst = Taxi.objects.get_mis_taxis(user)
         form.fields["taxi"].queryset = qst
+        if qst.count() == 1:
+            form.fields["taxi"].initial = qst[0]
         return form
 
     def post(self, request, *args, **kwargs):

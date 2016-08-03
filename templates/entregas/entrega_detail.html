@@ -27,6 +27,15 @@
             </h4>
             </p>
 
+            {% if mostrar_actual_poseedor %}
+
+                <p>
+                <h4><span>Tiene la entrega: </span>
+                    <small><span class="lead"> {{ object.actual_poseedor.get_full_name }} </span></small>
+                </h4>
+                </p>
+
+            {% endif %}
             {% if mostrar_token %}
                 <p>
                 <h4><span>Clave Entrega: </span>
