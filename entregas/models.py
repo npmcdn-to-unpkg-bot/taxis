@@ -12,29 +12,47 @@ from django.contrib.auth.models import User
 STATUS_CHOICES = (
     ('1', 'Iniciada'),
     ('2', 'Enviada'),
-    ('3', 'En Revición'),
-    ('4', 'Aceptada'),
-    ('5', 'Rechazada'),
+    ('3', 'Recibido - Admin'),
+    ('4', 'Recibido - Prop'),
+    ('5', 'Aceptada - Admin'),
+    ('6', 'Aceptada - Prop'),
+    ('7', 'Rechazada'),
 )
+
 
 class EntregaoManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by("-fecha")
 
-    def get_mis_entregas(self,user):
+    def get_mis_entregas(self, user):
+        return Entrega.objects.filter(conductor=user)
+
+    def get_mis_entregas_administrados(self, user):
+        return Entrega.objects.filter(
+            ~Q(conductor=user) &
+            ~Q(taxi__propietario__user=user) &
+            Q(taxi__administrador__user=user)
+        )
+
+    def get_mis_entregas_propios(self, user):
+        return Entrega.objects.filter(
+            ~Q(conductor=user) &
+            Q(taxi__propietario__user=user) &
+            ~Q(taxi__administrador__user=user)
+        )
+
+    def get_mis_entregas_como_conductor(self, user):
         mis_taxis = Taxi.objects.get_mis_taxis(user)
         return Entrega.objects.filter(taxi__in=mis_taxis)
 
-    def get_mis_entregas_como_conductor(self,user):
-        mis_taxis = Taxi.objects.get_mis_taxis(user)
-        return Entrega.objects.filter(taxi__in=mis_taxis)
 
 class Entrega(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    conductor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="conductor_entrega")
     taxi = models.ForeignKey(Taxi, on_delete=models.PROTECT)
 
     actual_poseedor = models.ForeignKey(User, on_delete=models.PROTECT, related_name="usuario_tiene_entrega")
-    token = models.CharField(max_length=6)
+    token = models.PositiveSmallIntegerField(null=True, blank=True)
     fecha = models.DateField()
 
     timespam_creation = models.DateTimeField(auto_now_add=True, auto_now=False)
@@ -53,6 +71,19 @@ class Entrega(models.Model):
     def get_absolute_url(self):
         return reverse("entregas:entrega-detail", kwargs={"pk": self.pk})
 
+    def get_es_mi_entrega(self, user):
+        return self.conductor == user
+
+    def get_es_mi_entrega_administrado(self, user):
+        es_administrador = self.taxi.es_administrador(user)
+        es_propietario = self.taxi.es_propietario(user)
+        if es_administrador and not es_propietario:
+            return True
+        return False
+
+    def get_es_mi_entrega_propietario(self, user):
+        return self.taxi.es_propietario(user)
+
 
 class ConceptoTipo(models.Model):
     nombre = models.CharField(max_length=100)
@@ -61,7 +92,6 @@ class ConceptoTipo(models.Model):
 
     def __str__(self):
         return self.nombre
-
 
 
 class ConceptoManager(models.Manager):
@@ -84,6 +114,7 @@ class Concepto(models.Model):
     def __str__(self):
         return "%s - %s" % (self.fecha, self.tipo)
 
+
 def do_total_receiver(sender, instance, *args, **kwargs):
     entrega = instance.entrega
     if instance.tipo.ingreso:
@@ -93,6 +124,7 @@ def do_total_receiver(sender, instance, *args, **kwargs):
     entrega.total = entrega.total_ingreso - entrega.total_gasto
     entrega.save()
 
+
 def do_total_delete_receiver(sender, instance, *args, **kwargs):
     entrega = instance.entrega
     if instance.tipo.ingreso:
@@ -101,6 +133,7 @@ def do_total_delete_receiver(sender, instance, *args, **kwargs):
         entrega.total_gasto -= instance.valor
     entrega.total = entrega.total_ingreso - entrega.total_gasto
     entrega.save()
+
 
 post_save.connect(do_total_receiver, sender=Concepto)
 pre_delete.connect(do_total_delete_receiver, sender=Concepto)

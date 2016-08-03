@@ -1,3 +1,5 @@
+{% load flatpages %}
+{% load staticfiles %}
 <nav class="navbar navbar-default">
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -13,12 +15,62 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                {% if user.is_authenticated %}
-                    <li><a href="/accounts/logout/" class="fa fa-sign-out fa-2x" aria-hidden="true" role="button"> Cerrar</a></li>
-                    <li><a href="{% url 'entregas:entrega-list' %}">Mis Entregas</a></li>
-                {% else %}
-                    <li><a href="/accounts/login/" class="fa fa-sign-in fa-2x" aria-hidden="true" role="button"> Entrar </a></li>
+                {% if not user.is_authenticated %}
+                    <li><a href="/accounts/login/" class="fa fa-sign-in fa-2x" aria-hidden="true" role="button">
+                        Entrar </a></li>
                 {% endif %}
+                {% get_flatpages as flatpages %}
+                {% for page in flatpages %}
+                    <li><a href="{{ page.url }}">{{ page.title }}</a></li>
+                {% endfor %}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="glyphicon glyphicon-user"></span>
+                        <strong>{{ request.user.username }}</strong>
+                        <span class="glyphicon glyphicon-chevron-down"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <div class="navbar-login">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <p class="text-center">
+                                            <img class="img-circle" height="100" width="100" src="{{ request.user.userextended.avatar.url }}" />
+                                        </p>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <p class="text-left"><strong>{{ request.user.get_full_name }}</strong></p>
+                                        <p class="text-left small">{{ request.user.email }}</p>
+                                        <p class="text-left">
+                                            <a href="#" class="btn btn-primary btn-block btn-sm">Profile</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+{#                        <li class="divider navbar-login-session-bg"></li>#}
+{#                        <li><a href="#">Account Settings <span class="glyphicon glyphicon-cog pull-right"></span></a>#}
+{##}
+{#                        </li>#}
+                        <li class="divider"></li>
+                        <li><a href="{% url 'entregas:entrega-list' %}">Mis Entregas</a></li>
+{#                        <li class="divider"></li>#}
+{#                        <li><a href="#">User stats <span class="glyphicon glyphicon-stats pull-right"></span></a></li>#}
+{#                        <li class="divider"></li>#}
+{#                        <li><a href="#">Messages <span class="badge pull-right"> 42 </span></a></li>#}
+{#                        <li class="divider"></li>#}
+{#                        <li><a href="#">Favourites Snippets <span#}
+{#                                class="glyphicon glyphicon-heart pull-right"></span></a></li>#}
+                        <li class="divider"></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="/accounts/logout/" class="fa fa-sign-out fa-2x" aria-hidden="true"
+                                   role="button">
+                                Cerrar</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>

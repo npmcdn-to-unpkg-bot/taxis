@@ -1,6 +1,7 @@
+
 from django.conf.urls import url
 
-from .views import EntregaListView,EntregaDetailView, EntregaCreateView, ConceptoCreateView, ConceptoDeleteView,EntregaDeleteView
+from .views import EntregaListView,EntregaDetailView, EntregaCreateView, ConceptoCreateView, ConceptoDeleteView,EntregaDeleteView, EntregaUpdateAtributos
 
 urlpatterns = [
     url(r'^$', EntregaListView.as_view(), name='entrega-list'),
@@ -9,4 +10,7 @@ urlpatterns = [
     url(r'^concepto/create/$', ConceptoCreateView.as_view(), name='concepto-create'),
     url(r'^concepto/delete/$', ConceptoDeleteView.as_view(), name='concepto-delete'),
     url(r'^delete/$', EntregaDeleteView.as_view(), name='entrega-delete'),
+    url(r'^update_atributos', EntregaUpdateAtributos.as_view(), name='entrega-update-atributos'),
 ]
+
+
