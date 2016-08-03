@@ -1,6 +1,7 @@
 import datetime
 import random
 
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
@@ -60,6 +61,14 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
                         entrega.status = 6
                         entrega.save()
 
+                send_mail(
+                    subject='Prueba Envio Entrega',
+                    message='Una entrega se ha generado',
+                    from_email='fabio.garcia.sanchez@gmail.com',
+                    recipient_list=['fabio.garcia.sanchez@gmail.com'],
+                    fail_silently=False,
+                )
+
         return redirect(entrega)
 
 
@@ -104,7 +113,7 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
             if entrega.status == "2":
                 mostrar_token = True
 
-            if entrega.status == "26":
+            if entrega.status == "2":
                 mostrar_token = True
 
         if entrega.get_es_mi_entrega_administrado(self.request.user):
