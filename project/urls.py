@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 
 from project import settings
 
@@ -26,7 +27,7 @@ urlpatterns = [
     url(r'^entregas/', include('entregas.urls',namespace="entregas")),
     url(r'^taxis/', include('taxis.urls',namespace="taxis")),
     url(r'^pages/', include('django.contrib.flatpages.urls')),
-    # url(r'^$', RedirectView.as_view(url='/accounts/login', permanent=False), name='index')
+    url(r'^$', RedirectView.as_view(url='/entregas', permanent=False), name='index')
 ]
 
 if settings.DEBUG:

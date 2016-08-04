@@ -9,6 +9,7 @@ class Concepto_Inline(admin.StackedInline):
     model = Concepto
     can_delete = False
     verbose_name_plural = 'concepto'
+    extra = 0
 
 
 # Register your models here.

@@ -86,8 +86,9 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
         new_concepto = ConceptoForm
         contexto = super().get_context_data(**kwargs)
 
+        current_user = self.request.user
+
         entrega = contexto["object"]
-        taxi = entrega.taxi
 
         siguiente_estado = 0  # whe this is 0 the button to get the next stage will be disabled
         conceptos_eliminables = False
@@ -96,7 +97,7 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
         mostrar_boton_aceptar = False
         mostrar_actual_poseedor = False
 
-        if entrega.get_es_mi_entrega(self.request.user):
+        if entrega.get_es_mi_entrega(current_user):
             if entrega.status == "1":
                 mostrar_boton_aceptar = True
                 siguiente_estado = 2
@@ -108,7 +109,7 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
             if entrega.status == "2":
                 mostrar_token = True
 
-        if entrega.get_es_mi_entrega_administrado(self.request.user):
+        if entrega.get_es_mi_entrega_administrado(current_user):
             mostrar_actual_poseedor = True
             if entrega.status == "5":
                 mostrar_token = True
@@ -119,8 +120,10 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
             if entrega.status == "3":
                 siguiente_estado = 5
                 mostrar_boton_aceptar = True
+                if entrega.user == current_user:
+                    conceptos_eliminables = True
 
-        if entrega.get_es_mi_entrega_propietario(self.request.user):
+        if entrega.get_es_mi_entrega_propietario(current_user):
             mostrar_actual_poseedor = True
             if entrega.status == "2":
                 mostrar_pedir_token = True
@@ -133,6 +136,8 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
             if entrega.status == "4":
                 siguiente_estado = 6
                 mostrar_boton_aceptar = True
+                if entrega.user == current_user:
+                    conceptos_eliminables = True
 
         contexto["mostrar_actual_poseedor"] = mostrar_actual_poseedor
         contexto["mostrar_boton_aceptar"] = mostrar_boton_aceptar
@@ -168,6 +173,13 @@ class EntregaCreateView(LoginRequiredMixin, CreateView):
             taxi_id = request.POST.get("taxi")
             taxi = Taxi.objects.get(pk=taxi_id)
             entrega = Entrega(actual_poseedor=user, taxi=taxi, user=user, fecha=fecha, conductor=taxi.conductor.user)
+
+            if taxi.es_administrador(user):
+                entrega.status = 3
+
+            if taxi.es_propietario(user):
+                entrega.status = 4
+
             entrega.save()
             return redirect(entrega.get_absolute_url())
         return super(EntregaCreateView, self).post(request, *args, **kwargs)
@@ -217,9 +229,30 @@ class ConceptoDeleteView(LoginRequiredMixin, DeleteView):
 
 class EntregaDeleteView(LoginRequiredMixin, DeleteView):
     def post(self, request, *args, **kwargs):
+        current_user = self.request.user
         id_ent = self.request.POST.get("id_ent")
         entrega = get_object_or_404(Entrega, id=id_ent)
-        entrega.delete()
+
+        delete = False
+
+        if entrega.get_es_mi_entrega(current_user):
+            if entrega.status == "1":
+                if entrega.user == current_user:
+                    delete = True
+
+        if entrega.get_es_mi_entrega_administrado(current_user):
+            if entrega.status == "3":
+                if entrega.user == current_user:
+                    delete = True
+
+        if entrega.get_es_mi_entrega_propietario(current_user):
+            if entrega.status == "4":
+                if entrega.user == current_user:
+                    delete = True
+
+        if delete:
+            entrega.delete()
+
         return redirect(reverse("entregas:entrega-list"))
 
         # def post(self, request, *args, **kwargs):

@@ -15,6 +15,7 @@
                         {#        {% empty %}#}
                         {#            <li>No articles yet.</li>#}
                         <td>{{ entrega.get_status_display }}</td>
+                        <td class="text-right">{{ entrega.total|floatformat }}</td>
                     </tr>
                 {% endfor %}
             </table>
@@ -33,6 +34,7 @@
                             {#        {% empty %}#}
                             {#            <li>No articles yet.</li>#}
                             <td>{{ entrega.get_status_display }}</td>
+                            <td class="text-right">{{ entrega.total|floatformat }}</td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -53,6 +55,7 @@
                             {#        {% empty %}#}
                             {#            <li>No articles yet.</li>#}
                             <td>{{ entrega.get_status_display }}</td>
+                            <td class="text-right">{{ entrega.total|floatformat }}</td>
                         </tr>
                     {% endfor %}
                 </table>
