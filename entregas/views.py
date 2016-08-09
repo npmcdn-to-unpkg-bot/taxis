@@ -34,28 +34,28 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
                     entrega.actual_poseedor = current_user
 
                     if entrega.taxi.es_administrador(current_user):
-                        entrega.status = 3
-                        entrega.token = random.randint(10000, 99999)
+                        # entrega.status = 3
+                        # entrega.token = random.randint(10000, 99999)
                         entrega.save()
 
                     if entrega.taxi.es_propietario(current_user):
-                        entrega.status = 4
-                        entrega.token = random.randint(10000, 99999)
+                        # entrega.status = 4
+                        # entrega.token = random.randint(10000, 99999)
                         entrega.save()
 
             if request.POST.get("tipo_update") == "siguiente_estado":
 
                 if entrega.get_es_mi_entrega(current_user):
                     if entrega.status == "1":
-                        token = random.randint(10000, 99999)
-                        entrega.token = token
+                        # token = random.randint(10000, 99999)
+                        # entrega.token = token
                         entrega.status = 2
                         entrega.save()
 
                 if entrega.get_es_mi_entrega_administrado(current_user):
                     if entrega.actual_poseedor == current_user:
-                        token = random.randint(10000, 99999)
-                        entrega.token = token
+                        # token = random.randint(10000, 99999)
+                        # entrega.token = token
                         entrega.status = 5
                         entrega.save()
 
@@ -116,8 +116,8 @@ class EntregaListView(LoginRequiredMixin,View):
                     # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
 
             return JsonResponse(json.dumps(json_object), safe=False)
-        send_mail(subject="prueba", message="estamos probando", from_email="prueba@nuevo.fabgarsan.webfactional.com",
-                  recipient_list=['fabio.garcia.sanchez@gmail.com'])
+        # send_mail(subject="prueba", message="estamos probando", from_email="prueba@nuevo.fabgarsan.webfactional.com",
+        #           recipient_list=['fabio.garcia.sanchez@gmail.com'])
         return render(request, self.template_name)
 
 
