@@ -116,8 +116,9 @@ class EntregaListView(LoginRequiredMixin,View):
                     # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
 
             return JsonResponse(json.dumps(json_object), safe=False)
-        # send_mail(subject="prueba", message="estamos probando", from_email="prueba@nuevo.fabgarsan.webfactional.com",
-        #           recipient_list=['fabio.garcia.sanchez@gmail.com'])
+        send_mail(subject="pruebanueva", message="estamos probando 2", from_email="prueba@nuevo.fabgarsan.webfactional.com",
+                  recipient_list=['fabio.garcia.sanchez@gmail.com'])
+        print("Envio Correo")
         return render(request, self.template_name)
 
 

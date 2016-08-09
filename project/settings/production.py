@@ -12,165 +12,176 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+from project import settings
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-from project.settings.passwords import BD_NAME, BD_USER, BD_PASSWORD,EMAIL_PASS,EMAIL_DIR, PAS_SERVER_EMAIL, PAS_DEFAULT_FROM_EMAIL
+if not settings.DEBUG:
+    # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+    from project.settings.passwords import (
+        BD_NAME,
+        BD_USER,
+        BD_PASSWORD,
+        PASS_MAILBOX,
+        EMAIL_PASS,
+        EMAIL_DIR,
+        PAS_SERVER_EMAIL,
+        PAS_DEFAULT_FROM_EMAIL,
+        EMAIL_HOST
+    )
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(w973*(jx)vh48*cfcba5^qx&@mvdlmb9v6u_089o@r=_emt0-'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ["*"]
-# ALLOWED_HOSTS = ['cfedeploy.webfactional.com', 'trydjango.com', 'www.trydjango.com']
-# purchasing domain name http://name.com
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-ADMINS = (
-    ("Fabio", EMAIL_DIR),
-)
+    # Quick-start development settings - unsuitable for production
+    # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = EMAIL_DIR
-EMAIL_HOST_PASSWORD = EMAIL_PASS
-EMAIL_PORT = 587
-DEFAULT_FROM_EMAIL = PAS_DEFAULT_FROM_EMAIL
-SERVER_EMAIL = PAS_SERVER_EMAIL
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = '(w973*(jx)vh48*cfcba5^qx&@mvdlmb9v6u_089o@r=_emt0-'
 
-# Application definition
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = False
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'django.contrib.flatpages',
+    ALLOWED_HOSTS = ["*"]
+    # ALLOWED_HOSTS = ['cfedeploy.webfactional.com', 'trydjango.com', 'www.trydjango.com']
+    # purchasing domain name http://name.com
 
-    'registration',
-    'crispy_forms',
 
-    'users',
-    'entregas',
-    'taxis',
-]
+    ADMINS = (
+        ("Fabio", EMAIL_DIR),
+    )
 
-MIDDLEWARE_CLASSES = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
-]
+    EMAIL_HOST = EMAIL_HOST
+    EMAIL_HOST_USER = PASS_MAILBOX
+    EMAIL_HOST_PASSWORD = EMAIL_PASS
+    DEFAULT_FROM_EMAIL = PAS_DEFAULT_FROM_EMAIL
+    SERVER_EMAIL = PAS_SERVER_EMAIL
 
-ROOT_URLCONF = 'project.urls'
+    # Application definition
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
+    INSTALLED_APPS = [
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'django.contrib.sites',
+        'django.contrib.flatpages',
+
+        'registration',
+        'crispy_forms',
+
+        'users',
+        'entregas',
+        'taxis',
+    ]
+
+    MIDDLEWARE_CLASSES = [
+        'django.middleware.security.SecurityMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    ]
+
+    ROOT_URLCONF = 'project.urls'
+
+    TEMPLATES = [
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': [os.path.join(BASE_DIR, 'templates')]
+            ,
+            'APP_DIRS': True,
+            'OPTIONS': {
+                'context_processors': [
+                    'django.template.context_processors.debug',
+                    'django.template.context_processors.request',
+                    'django.contrib.auth.context_processors.auth',
+                    'django.contrib.messages.context_processors.messages',
+                ],
+            },
         },
-    },
-]
+    ]
 
-WSGI_APPLICATION = 'project.wsgi.application'
+    WSGI_APPLICATION = 'project.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.9/ref/settings/#databases
+    # Database
+    # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': BD_NAME,
-        'USER': BD_USER,
-        'PASSWORD': BD_PASSWORD,
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': BD_NAME,
+            'USER': BD_USER,
+            'PASSWORD': BD_PASSWORD,
+        }
     }
-}
 
 
-# Password validation
-# https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
+    # Password validation
+    # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/1.9/topics/i18n/
-
-FORMAT_MODULE_PATH = [
-    'project.formats',
-]
-
-LANGUAGE_CODE = 'es'
-
-USE_THOUSAND_SEPARATOR = True
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
+    AUTH_PASSWORD_VALIDATORS = [
+        {
+            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        },
+        {
+            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        },
+    ]
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
+    # Internationalization
+    # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
-STATIC_URL = '/static/'
-STATIC_ROOT = '/home/fabgarsan/webapps/admin_taxis_static'
+    FORMAT_MODULE_PATH = [
+        'project.formats',
+    ]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/fabgarsan/webapps/admin_taxis_media'
+    LANGUAGE_CODE = 'es'
+
+    USE_THOUSAND_SEPARATOR = True
+
+    TIME_ZONE = 'UTC'
+
+    USE_I18N = True
+
+    USE_L10N = True
+
+    USE_TZ = True
 
 
-#Crispy FORM TAGs SETTINGS
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
+    # Static files (CSS, JavaScript, Images)
+    # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-#DJANGO REGISTRATION REDUX SETTINGS
-ACCOUNT_ACTIVATION_DAYS = 7
-REGISTRATION_AUTO_LOGIN = True
-SITE_ID = 1
-LOGIN_REDIRECT_URL = '/entregas'
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, "static"),
+    ]
+    STATIC_URL = '/static/'
+    STATIC_ROOT = '/home/fabgarsan/webapps/admin_taxis_static'
 
-#is used for 'django.contrib.flatpages'
-SITE_ID = 1
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = '/home/fabgarsan/webapps/admin_taxis_media'
+
+
+    #Crispy FORM TAGs SETTINGS
+    CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+    #DJANGO REGISTRATION REDUX SETTINGS
+    ACCOUNT_ACTIVATION_DAYS = 7
+    REGISTRATION_AUTO_LOGIN = True
+    SITE_ID = 1
+    LOGIN_REDIRECT_URL = '/entregas'
+
+    #is used for 'django.contrib.flatpages'
+    SITE_ID = 1
