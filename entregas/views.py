@@ -1,6 +1,9 @@
 import datetime
 import random
+import json
 
+from django.core import serializers
+from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import Http404
@@ -64,19 +67,60 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
         return redirect(entrega)
 
 
-class EntregaListView(LoginRequiredMixin, ListView):
+class EntregaListView(LoginRequiredMixin,View):
     model = Entrega
+    template_name = "entregas/entrega_list.html"
 
-    def get_queryset(self):
-        qs = Entrega.objects.get_mis_entregas(self.request.user)
-        return qs
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["entregas_administrados"] = Entrega.objects.get_mis_entregas_administrados(self.request.user)
-        context["entregas_propios"] = Entrega.objects.get_mis_entregas_propios(self.request.user)
+    def get(self, request, *args, **kwargs):
+        if self.request.is_ajax():
+            json_object = []
 
-        return context
+            if self.request.GET.get("tipo") == "mis_entregas":
+                context = Entrega.objects.get_mis_entregas(self.request.user)
+                for x in context:
+                    object_json = {
+                        "pk":x.id,
+                        "entrega": "%s - (%s)" %(x.fecha.strftime("%m/%Y/%d"),x.taxi.placa),
+                        "total": str(x.total),
+                        "status":x.get_status_display(),
+                        "url":x.get_absolute_url()
+                    }
+                    json_object.append(object_json)
+                # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
+
+            if self.request.GET.get("tipo") == "mis_administrados":
+                context = Entrega.objects.get_mis_entregas_administrados(self.request.user)
+                for x in context:
+                    object_json = {
+                        "pk": x.id,
+                        "entrega": "%s - (%s)" % (x.fecha.strftime("%m/%Y/%d"), x.taxi.placa),
+                        "total": str(x.total),
+                        "status": x.get_status_display(),
+                        "url": x.get_absolute_url()
+                    }
+                    json_object.append(object_json)
+                    # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
+
+            if self.request.GET.get("tipo") == "mis_propios":
+                context = Entrega.objects.get_mis_entregas_propios(self.request.user)
+                for x in context:
+                    object_json = {
+                        "pk": x.id,
+                        "entrega": "%s - (%s)" % (x.fecha.strftime("%m/%Y/%d"), x.taxi.placa),
+                        "total": str(x.total),
+                        "status": x.get_status_display(),
+                        "url": x.get_absolute_url()
+                    }
+                    json_object.append(object_json)
+                    # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
+
+            return JsonResponse(json.dumps(json_object), safe=False)
+        send_mail(subject="prueba", message="estamos probando", from_email="prueba@nuevo.fabgarsan.webfactional.com",
+                  recipient_list=['fabio.garcia.sanchez@gmail.com'])
+        return render(request, self.template_name)
+
+
 
 
 class EntregaDetailView(LoginRequiredMixin, DetailView):

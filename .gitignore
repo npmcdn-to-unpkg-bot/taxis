@@ -7,3 +7,5 @@ migirations/**
 vcs.xml
 __pycache__/
 migrations/
+/project/settings/production.py
+/static/js/tabla.js

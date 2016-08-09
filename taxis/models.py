@@ -38,6 +38,7 @@ class TaxiManager(models.Manager):
         return qs1
 
 
+
 class Taxi(models.Model):
     placa = models.CharField(max_length=10)
     conductor = models.OneToOneField(Taxista, on_delete=models.PROTECT, null=True)
@@ -52,6 +53,9 @@ class Taxi(models.Model):
 
     def es_propietario(self, user):
         return self.propietario.user == user
+
+    def natural_key(self):
+        return self.placa
 
     objects = TaxiManager()
 

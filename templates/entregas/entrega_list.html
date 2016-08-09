@@ -1,66 +1,35 @@
 {% extends 'base.html' %}
+{% load staticfiles %}
 
 {% block content %}
+
+    <script src="https://npmcdn.com/react@15.3.0/dist/react.js"></script>
+    <script src="https://npmcdn.com/react-dom@15.3.0/dist/react-dom.js"></script>
+    <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
+
+{#    <script type="text/babel" src="{% static 'js/dev/tabla.jsx' %}"></script>#}
+
+    <script src="{% static 'js/tabla.min.js' %}"></script>
+
+
     <div class="row">
         <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
-            <h2>Entregas <a href="{% url 'entregas:entrega-create' %}" class="fa fa-plus-square"></a>
-            </h2>
-            <table class="table table-striped">
-                {% for entrega in object_list %}
-                    <tr>
-                        <td>
-                            <a href="{{ entrega.get_absolute_url }}">{{ entrega }}</a>
-                        </td>
-                        {#            <li>{{ article.pub_date|date }} - {{ article.headline }}</li>#}
-                        {#        {% empty %}#}
-                        {#            <li>No articles yet.</li>#}
-                        <td>{{ entrega.get_status_display }}</td>
-                        <td class="text-right">{{ entrega.total|floatformat }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-        {% if entregas_propios.count > 0 %}
-            <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
-                <h2>Mis Taxis
-                </h2>
-                <table class="table table-striped">
-                    {% for entrega in entregas_propios %}
-                        <tr>
-                            <td>
-                                <a href="{{ entrega.get_absolute_url }}">{{ entrega }}</a>
-                            </td>
-                            {#            <li>{{ article.pub_date|date }} - {{ article.headline }}</li>#}
-                            {#        {% empty %}#}
-                            {#            <li>No articles yet.</li>#}
-                            <td>{{ entrega.get_status_display }}</td>
-                            <td class="text-right">{{ entrega.total|floatformat }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        {% endif %}
+            <a href="{% url 'entregas:entrega-create' %}" class="fa fa-plus-square fa-2x"></a>
+            <div id="mis-entregas-table">
 
-        {% if entregas_administrados.count > 0 %}
-            <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
-                <h2>Administrados
-                </h2>
-                <table class="table table-striped">
-                    {% for entrega in entregas_administrados %}
-                        <tr>
-                            <td>
-                                <a href="{{ entrega.get_absolute_url }}">{{ entrega }}</a>
-                            </td>
-                            {#            <li>{{ article.pub_date|date }} - {{ article.headline }}</li>#}
-                            {#        {% empty %}#}
-                            {#            <li>No articles yet.</li>#}
-                            <td>{{ entrega.get_status_display }}</td>
-                            <td class="text-right">{{ entrega.total|floatformat }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
             </div>
-        {% endif %}
+        </div>
+        <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
+            <div id="mis-entregas-propios">
+
+            </div>
+        </div>
+
+        <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
+            <div id="mis-entregas-administrados">
+
+            </div>
+        </div>
         <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-pull-0">
             <h2>Informacion General</h2>
         </div>

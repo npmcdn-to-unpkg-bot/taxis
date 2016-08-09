@@ -12,8 +12,9 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-from project.settings.passwords import BD_NAME, BD_USER, BD_PASSWORD,EMAIL_PASS,EMAIL_DIR
+from project.settings.passwords import BD_NAME, BD_USER, BD_PASSWORD,EMAIL_PASS,EMAIL_DIR, PAS_SERVER_EMAIL, PAS_DEFAULT_FROM_EMAIL
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -40,8 +41,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = EMAIL_DIR
 EMAIL_HOST_PASSWORD = EMAIL_PASS
 EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
+DEFAULT_FROM_EMAIL = PAS_DEFAULT_FROM_EMAIL
+SERVER_EMAIL = PAS_SERVER_EMAIL
 
 # Application definition
 
