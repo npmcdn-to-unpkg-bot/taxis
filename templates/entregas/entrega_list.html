@@ -7,28 +7,25 @@
     <script src="https://npmcdn.com/react-dom@15.3.0/dist/react-dom.js"></script>
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
 
-{#    <script type="text/babel" src="{% static 'js/dev/tabla.jsx' %}"></script>#}
+    {#    <script type="text/babel" src="{% static 'js/deve/tabla.jsx' %}"></script>#}
 
-    <script src="{% static 'js/tabla.min.js' %}"></script>
-
+    <script src="{% static 'js/dist/tabla.min.js' %}"></script>
 
     <div class="row">
         <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
             <a href="{% url 'entregas:entrega-create' %}" class="fa fa-plus-square fa-2x"></a>
-            <div id="mis-entregas-table">
-
-            </div>
         </div>
-        <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
-            <div id="mis-entregas-propios">
+    </div>
+    <hr/>
+    <div class="row">
+        <div id="mis-entregas-table">
 
-            </div>
         </div>
+        <div id="mis-entregas-administrados">
 
-        <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-push-0">
-            <div id="mis-entregas-administrados">
+        </div>
+        <div id="mis-entregas-propios">
 
-            </div>
         </div>
         <div class="col-sm-4 col-xs-10 col-sm-offset-1 col-xs-offset-1 col-xs-pull-0">
             <h2>Informacion General</h2>

@@ -1,22 +1,18 @@
 import datetime
-import random
 import json
+import random
 
-from django.core import serializers
-from django.http import JsonResponse
-from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
-from django.http import Http404
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView, DeleteView
-from django.views.generic.edit import CreateView
+from django.views.generic import DetailView, DeleteView
 from django.views.generic.base import View
+from django.views.generic.edit import CreateView
 
-# Create your views here.
-from .forms import EntregaForm, ConceptoForm
-from .models import Entrega, Concepto, ConceptoTipo
 from taxis.models import Taxi
 from users.mixin import LoginRequiredMixin
+from .forms import EntregaForm, ConceptoForm
+from .models import Entrega, Concepto, ConceptoTipo
 
 
 class EntregaUpdateAtributos(LoginRequiredMixin, View):
@@ -32,29 +28,30 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
 
                 if entrega.token == int(token):
                     entrega.actual_poseedor = current_user
+                    new_token = random.randint(10000, 99999)
 
                     if entrega.taxi.es_administrador(current_user):
                         entrega.status = 3
-                        entrega.token = random.randint(10000, 99999)
+                        entrega.token = new_token
                         entrega.save()
 
                     if entrega.taxi.es_propietario(current_user):
                         entrega.status = 4
-                        entrega.token = random.randint(10000, 99999)
+                        entrega.token = new_token
                         entrega.save()
 
             if request.POST.get("tipo_update") == "siguiente_estado":
 
                 if entrega.get_es_mi_entrega(current_user):
                     if entrega.status == "1":
-                        token = random.randint(10000, 99999)
+                        token = new_token
                         entrega.token = token
                         entrega.status = 2
                         entrega.save()
 
                 if entrega.get_es_mi_entrega_administrado(current_user):
                     if entrega.actual_poseedor == current_user:
-                        token = random.randint(10000, 99999)
+                        token = new_token
                         entrega.token = token
                         entrega.status = 5
                         entrega.save()
@@ -64,61 +61,75 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
                         entrega.status = 6
                         entrega.save()
 
+            if self.request.is_ajax():
+                print("Acepto Entrega o Valido Token")
+                return JsonResponse({"result": "Entrega Aceptada"})
+
         return redirect(entrega)
 
 
-class EntregaListView(LoginRequiredMixin,View):
+class EntregaListView(LoginRequiredMixin, View):
     model = Entrega
     template_name = "entregas/entrega_list.html"
 
-
     def get(self, request, *args, **kwargs):
         if self.request.is_ajax():
-            json_object = []
+            json_list_entregas = []
+            response = {}
+            tipo_lista = self.request.GET.get("tipo")
+            fecha_ultima_actualizacion_lista_cliente = self.request.GET.get("fecha_ultima_actualizacion")
+            fecha_ultima_actualizacion_lista_servidor = '-1'
+            context = ''
+            actualizar = False
 
-            if self.request.GET.get("tipo") == "mis_entregas":
-                context = Entrega.objects.get_mis_entregas(self.request.user)
-                for x in context:
-                    object_json = {
-                        "pk":x.id,
-                        "entrega": "%s - (%s)" %(x.fecha.strftime("%m/%Y/%d"),x.taxi.placa),
-                        "total": str(x.total),
-                        "status":x.get_status_display(),
-                        "url":x.get_absolute_url()
-                    }
-                    json_object.append(object_json)
-                # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
+            try:
+                if tipo_lista == "mis_entregas":
+                    fecha_ultima_actualizacion_lista_servidor = str(
+                        Entrega.objects.get_mis_entregas(self.request.user).select_related("taxi").latest(
+                            "timespam_update").timespam_update)
+                    if fecha_ultima_actualizacion_lista_servidor != fecha_ultima_actualizacion_lista_cliente:
+                        context = Entrega.objects.get_mis_entregas(self.request.user).select_related("taxi")
+                        actualizar = True
 
-            if self.request.GET.get("tipo") == "mis_administrados":
-                context = Entrega.objects.get_mis_entregas_administrados(self.request.user)
-                for x in context:
-                    object_json = {
-                        "pk": x.id,
-                        "entrega": "%s - (%s)" % (x.fecha.strftime("%m/%Y/%d"), x.taxi.placa),
-                        "total": str(x.total),
-                        "status": x.get_status_display(),
-                        "url": x.get_absolute_url()
-                    }
-                    json_object.append(object_json)
-                    # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
+                if tipo_lista == "mis_administrados":
+                    fecha_ultima_actualizacion_lista_servidor = str(
+                        Entrega.objects.get_mis_entregas_administrados(self.request.user).select_related("taxi").latest(
+                            "timespam_update").timespam_update)
+                    if fecha_ultima_actualizacion_lista_servidor != fecha_ultima_actualizacion_lista_cliente:
+                        context = Entrega.objects.get_mis_entregas_administrados(self.request.user).select_related(
+                            "taxi")
+                        actualizar = True
 
-            if self.request.GET.get("tipo") == "mis_propios":
-                context = Entrega.objects.get_mis_entregas_propios(self.request.user)
-                for x in context:
-                    object_json = {
-                        "pk": x.id,
-                        "entrega": "%s - (%s)" % (x.fecha.strftime("%m/%Y/%d"), x.taxi.placa),
-                        "total": str(x.total),
-                        "status": x.get_status_display(),
-                        "url": x.get_absolute_url()
-                    }
-                    json_object.append(object_json)
-                    # data = serializers.serialize("json",context,use_natural_foreign_keys=True)
+                if tipo_lista == "mis_propios":
+                    fecha_ultima_actualizacion_lista_servidor = str(
+                        Entrega.objects.get_mis_entregas_propios(self.request.user).select_related("taxi").latest(
+                            "timespam_update").timespam_update)
 
-            return JsonResponse(json.dumps(json_object), safe=False)
+                    if fecha_ultima_actualizacion_lista_servidor != fecha_ultima_actualizacion_lista_cliente:
+                        context = Entrega.objects.get_mis_entregas_propios(self.request.user).select_related("taxi")
+                        actualizar = True
+
+                if actualizar:
+                    for x in context:
+                        object_json = {
+                            "pk": x.id,
+                            "entrega": "%s - (%s)" % (x.fecha.strftime("%m/%Y/%d"), x.taxi.placa),
+                            "total": str(x.total),
+                            "status": x.get_status_display(),
+                            "url": x.get_absolute_url()
+                        }
+                        json_list_entregas.append(object_json)
+            except:
+                actualizar = False
+
+            response = {
+                "fecha_ultima_actualizacion": fecha_ultima_actualizacion_lista_servidor,
+                "entregas": json_list_entregas,
+            }
+
+            return JsonResponse(json.dumps(response), safe=False)
+
         return render(request, self.template_name)
-
-
 
 
 class EntregaDetailView(LoginRequiredMixin, DetailView):
@@ -127,68 +138,113 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         new_concepto = ConceptoForm
         contexto = super().get_context_data(**kwargs)
-
-        current_user = self.request.user
-
-        entrega = contexto["object"]
-
-        siguiente_estado = 0  # whe this is 0 the button to get the next stage will be disabled
-        conceptos_eliminables = False
-        mostrar_token = False
-        mostrar_pedir_token = False
-        mostrar_boton_aceptar = False
-        mostrar_actual_poseedor = False
-
-        if entrega.get_es_mi_entrega(current_user):
-            if entrega.status == "1":
-                mostrar_boton_aceptar = True
-                siguiente_estado = 2
-                conceptos_eliminables = True
-
-            if entrega.status == "2":
-                mostrar_token = True
-
-            if entrega.status == "2":
-                mostrar_token = True
-
-        if entrega.get_es_mi_entrega_administrado(current_user):
-            mostrar_actual_poseedor = True
-            if entrega.status == "5":
-                mostrar_token = True
-            if entrega.status == "2":
-                mostrar_pedir_token = True
-                siguiente_estado = 3
-
-            if entrega.status == "3":
-                siguiente_estado = 5
-                mostrar_boton_aceptar = True
-                if entrega.user == current_user:
-                    conceptos_eliminables = True
-
-        if entrega.get_es_mi_entrega_propietario(current_user):
-            mostrar_actual_poseedor = True
-            if entrega.status == "2":
-                mostrar_pedir_token = True
-                siguiente_estado = 4
-
-            if entrega.status == "5":
-                mostrar_pedir_token = True
-                siguiente_estado = 4
-
-            if entrega.status == "4":
-                siguiente_estado = 6
-                mostrar_boton_aceptar = True
-                if entrega.user == current_user:
-                    conceptos_eliminables = True
-
-        contexto["mostrar_actual_poseedor"] = mostrar_actual_poseedor
-        contexto["mostrar_boton_aceptar"] = mostrar_boton_aceptar
-        contexto["mostrar_pedir_token"] = mostrar_pedir_token
-        contexto["mostrar_token"] = mostrar_token
-        contexto["siguiente_estado"] = siguiente_estado
-        contexto["conceptos_eliminables"] = conceptos_eliminables
         contexto["form_new_concepto"] = new_concepto
         return contexto
+
+    def get(self, request, *args, **kwargs):
+
+        if self.request.is_ajax():
+            current_user = self.request.user
+            ent_id = self.request.GET.get("ent_id")
+
+            fecha_ultimaVersion_reacjs = self.request.GET.get("ultimo_update_entrega_fecha")
+            fecha_ultimaVersion_db = str(get_object_or_404(Entrega, id=ent_id).timespam_update)
+
+            if fecha_ultimaVersion_reacjs == fecha_ultimaVersion_db:
+                return JsonResponse(json.dumps({"ultimo_update_entrega_fecha": fecha_ultimaVersion_db}), safe=False)
+            else:
+                entrega = get_object_or_404(
+                    Entrega.objects.select_related('taxi', 'conductor', 'actual_poseedor').prefetch_related('conceptos')
+                    , id=ent_id)
+
+                Entrega.objects.select_related(None)
+                Entrega.objects.prefetch_related(None)
+
+                entrega_editable = False  # listo
+                mostrar_boton_aceptar = False
+                mostrar_token = False  # listo
+                pedit_token = False  # listo
+                mostrar_quien_tiene_entrega = False  # listo
+                siguiente_estado = 0
+
+                if entrega.get_es_mi_entrega(current_user):
+                    if entrega.status == "1":
+                        mostrar_boton_aceptar = True
+                        siguiente_estado = 2
+                        entrega_editable = True
+
+                    if entrega.status == "2":
+                        mostrar_token = True
+
+                    if entrega.status == "2":
+                        mostrar_token = True
+
+                if entrega.get_es_mi_entrega_administrado(current_user):
+                    mostrar_quien_tiene_entrega = True
+                    if entrega.status == "5":
+                        mostrar_token = True
+                    if entrega.status == "2":
+                        pedit_token = True
+                        siguiente_estado = 3
+
+                    if entrega.status == "3":
+                        siguiente_estado = 5
+                        mostrar_boton_aceptar = True
+                        if entrega.user == current_user:
+                            entrega_editable = True
+
+                if entrega.get_es_mi_entrega_propietario(current_user):
+                    mostrar_quien_tiene_entrega = True
+                    if entrega.status == "2":
+                        pedit_token = True
+                        siguiente_estado = 4
+
+                    if entrega.status == "5":
+                        pedit_token = True
+                        siguiente_estado = 4
+
+                    if entrega.status == "4":
+                        siguiente_estado = 6
+                        mostrar_boton_aceptar = True
+                        if entrega.user == current_user:
+                            entrega_editable = True
+
+                json_list_conceptos = []
+                for x in entrega.conceptos.all():
+                    object_json_list = {
+                        "pk": x.id,
+                        "tipo": x.tipo.nombre,
+                        "es_ingreso": x.tipo.ingreso,
+                        "fecha": x.fecha.strftime("%m/%Y/%d"),
+                        "valor": str(x.valor),
+                        "url_delete": reverse("entregas:concepto-delete"),
+                    }
+                    json_list_conceptos.append(object_json_list)
+
+                object_json = {
+                    "estado": entrega.get_status_display(),
+                    "url_delete": reverse("entregas:entrega-delete"),
+                    "url_estado_token": reverse("entregas:entrega-update-atributos"),
+                    "taxi": entrega.taxi.placa,
+                    "fecha": entrega.fecha.strftime("%m/%Y/%d"),
+                    "conductor": entrega.conductor.get_full_name(),
+                    "valor": str(entrega.total),
+                    "gasto": str(entrega.total_gasto),
+                    "ingreso": str(entrega.total_ingreso),
+                    "token": str(entrega.token),
+                    "persona_entrega": str(entrega.actual_poseedor.get_full_name()),
+                    "entrega_editable": entrega_editable,
+                    "mostrar_token": mostrar_token,
+                    "pedit_token": pedit_token,
+                    "mostrar_quien_tiene_entrega": mostrar_quien_tiene_entrega,
+                    "siguiente_estado": siguiente_estado,
+                    "mostrar_boton_aceptar": mostrar_boton_aceptar,
+                    "conceptos": json_list_conceptos,
+                    "ultimo_update_entrega_fecha": str(entrega.timespam_update),
+                }
+                return JsonResponse(json.dumps(object_json), safe=False)
+
+        return super().get(request, *args, **kwargs)
 
 
 class EntregaCreateView(LoginRequiredMixin, CreateView):
@@ -261,11 +317,16 @@ class ConceptoCreateView(LoginRequiredMixin, CreateView):
 
 class ConceptoDeleteView(LoginRequiredMixin, DeleteView):
     def post(self, request, *args, **kwargs):
+        id_concepto = self.request.POST.get("id_concept")
+        concepto = get_object_or_404(Concepto, id=id_concepto)
+        entrega = concepto.entrega
+
         if request.user.is_authenticated():
-            id_concepto = self.request.POST.get("id_concept")
-            concepto = get_object_or_404(Concepto, id=id_concepto)
-            entrega = concepto.entrega
-            concepto.delete()
+            # concepto.delete()
+
+            if self.request.is_ajax():
+                return JsonResponse({"prueba": "funciono"})
+
         return redirect(entrega)
 
 
@@ -293,46 +354,9 @@ class EntregaDeleteView(LoginRequiredMixin, DeleteView):
                     delete = True
 
         if delete:
-            entrega.delete()
+            print("Eliminó Entrega")
+            # entrega.delete()
+            if self.request.is_ajax():
+                return JsonResponse({"prueba": "funciono"})
 
         return redirect(reverse("entregas:entrega-list"))
-
-        # def post(self, request, *args, **kwargs):
-        #     form = ConceptoForm(request.POST or None)
-        #     id_ent = request.POST.get("id_ent")
-        #     entrega = get_object_or_404(Entrega, id=id_ent)
-        #     if request.is_ajax():
-        #         if form.is_valid():
-        #             id_ent = request.POST.get("id_ent")
-        #             dia = int(request.POST.get("fecha_day"))
-        #             mes = int(request.POST.get("fecha_month"))
-        #             ano = int(request.POST.get("fecha_year"))
-        #             valor = int(request.POST.get("valor"))
-        #             tipo_id = int(request.POST.get("tipo"))
-        #
-        #             fecha = datetime.datetime(year=ano, month=mes, day=dia)
-        #             tipo = get_object_or_404(ConceptoTipo, id=tipo_id)
-        #             new_concepto = Concepto(fecha=fecha, entrega=entrega, valor=valor, tipo=tipo)
-        #
-        #             locale.setlocale(locale.LC_TIME, "es_ES")
-        #             fecha_string = "%s de %s de %s" %(dia,str.capitalize(fecha.strftime("%B")),ano)
-        #
-        #
-        #             context = {
-        #                 "is_valid": True,
-        #                 "id": new_concepto.id,
-        #                 "fecha": fecha_string,
-        #                 "tipo": tipo.nombre,
-        #                 "valor": valor
-        #             }
-        #         else:
-        #             context = {
-        #                 "is_valid": False,
-        #                 "errors": form.errors
-        #             }
-        #         return JsonResponse(context)
-        #
-        #     context = {
-        #         "object": self.get_object()
-        #     }
-        #     return render(request, entrega.get_absolute_url(), context)

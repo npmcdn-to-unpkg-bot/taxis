@@ -69,6 +69,7 @@ if not settings.DEBUG:
 
         'registration',
         'crispy_forms',
+        'debug_toolbar',
 
         'users',
         'entregas',
@@ -85,6 +86,8 @@ if not settings.DEBUG:
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
     ]
 
     ROOT_URLCONF = 'project.urls'
@@ -185,3 +188,6 @@ if not settings.DEBUG:
 
     #is used for 'django.contrib.flatpages'
     SITE_ID = 1
+
+    # for debug tools bar
+    DEBUG_TOOLBAR_PATCH_SETTINGS = False

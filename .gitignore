@@ -9,3 +9,4 @@ __pycache__/
 migrations/
 /project/settings/production.py
 /static/js/tabla.js
+/static/js/tabla.jsx

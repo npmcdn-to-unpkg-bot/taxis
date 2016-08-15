@@ -111,8 +111,8 @@ class ConceptoManager(models.Manager):
 
 
 class Concepto(models.Model):
-    entrega = models.ForeignKey(Entrega, on_delete=models.CASCADE)
-    tipo = models.ForeignKey(ConceptoTipo, on_delete=models.PROTECT)
+    entrega = models.ForeignKey(Entrega, on_delete=models.CASCADE, related_name="conceptos")
+    tipo = models.ForeignKey(ConceptoTipo, on_delete=models.PROTECT,related_name="conceptos")
     timespam_creation = models.DateTimeField(auto_now_add=True, auto_now=False)
     timespam_update = models.DateTimeField(auto_now_add=False, auto_now=True)
     descripcion = models.TextField(max_length=200, blank=True, null=True)
