@@ -69,7 +69,6 @@ if not settings.DEBUG:
 
         'registration',
         'crispy_forms',
-        'debug_toolbar',
 
         'users',
         'entregas',
@@ -188,6 +187,3 @@ if not settings.DEBUG:
 
     #is used for 'django.contrib.flatpages'
     SITE_ID = 1
-
-    # for debug tools bar
-    DEBUG_TOOLBAR_PATCH_SETTINGS = False
