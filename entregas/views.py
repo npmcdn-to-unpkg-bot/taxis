@@ -18,6 +18,8 @@ from .models import Entrega, Concepto, ConceptoTipo
 class EntregaUpdateAtributos(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         current_user = self.request.user
+        # new_token = random.randint(10000, 99999)
+        new_token = 11111
 
         if current_user.is_authenticated():
             id_ent = self.request.POST.get("id_ent")
@@ -28,8 +30,6 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
 
                 if entrega.token == int(token):
                     entrega.actual_poseedor = current_user
-                    # new_token = random.randint(10000, 99999)
-                    new_token = 11111
 
                     if entrega.taxi.es_administrador(current_user):
                         entrega.status = 3
@@ -323,7 +323,7 @@ class ConceptoDeleteView(LoginRequiredMixin, DeleteView):
         entrega = concepto.entrega
 
         if request.user.is_authenticated():
-            # concepto.delete()
+            concepto.delete()
 
             if self.request.is_ajax():
                 return JsonResponse({"prueba": "funciono"})
@@ -356,7 +356,7 @@ class EntregaDeleteView(LoginRequiredMixin, DeleteView):
 
         if delete:
             print("Eliminó Entrega")
-            # entrega.delete()
+            entrega.delete()
             if self.request.is_ajax():
                 return JsonResponse({"prueba": "funciono"})
 
