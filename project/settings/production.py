@@ -30,7 +30,6 @@ if not settings.DEBUG:
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
     # Quick-start development settings - unsuitable for production
     # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -46,7 +45,7 @@ if not settings.DEBUG:
 
 
     ADMINS = (
-        ("Fabio", EMAIL_DIR),
+        ("Fabio", EMAIL_DIR, "WebFaction", PAS_SERVER_EMAIL)
     )
 
     EMAIL_HOST = EMAIL_HOST
@@ -108,7 +107,6 @@ if not settings.DEBUG:
 
     WSGI_APPLICATION = 'project.wsgi.application'
 
-
     # Database
     # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
@@ -120,7 +118,6 @@ if not settings.DEBUG:
             'PASSWORD': BD_PASSWORD,
         }
     }
-
 
     # Password validation
     # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -139,7 +136,6 @@ if not settings.DEBUG:
             'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
         },
     ]
-
 
     # Internationalization
     # https://docs.djangoproject.com/en/1.9/topics/i18n/
@@ -160,7 +156,6 @@ if not settings.DEBUG:
 
     USE_TZ = True
 
-
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
@@ -173,15 +168,14 @@ if not settings.DEBUG:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = '/home/fabgarsan/webapps/admin_taxis_media'
 
-
-    #Crispy FORM TAGs SETTINGS
+    # Crispy FORM TAGs SETTINGS
     CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
-    #DJANGO REGISTRATION REDUX SETTINGS
+    # DJANGO REGISTRATION REDUX SETTINGS
     ACCOUNT_ACTIVATION_DAYS = 7
     REGISTRATION_AUTO_LOGIN = True
     SITE_ID = 1
     LOGIN_REDIRECT_URL = '/entregas'
 
-    #is used for 'django.contrib.flatpages'
+    # is used for 'django.contrib.flatpages'
     SITE_ID = 1
