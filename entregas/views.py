@@ -28,7 +28,8 @@ class EntregaUpdateAtributos(LoginRequiredMixin, View):
 
                 if entrega.token == int(token):
                     entrega.actual_poseedor = current_user
-                    new_token = random.randint(10000, 99999)
+                    # new_token = random.randint(10000, 99999)
+                    new_token = 11111
 
                     if entrega.taxi.es_administrador(current_user):
                         entrega.status = 3
