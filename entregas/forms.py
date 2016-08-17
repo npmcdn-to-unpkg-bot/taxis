@@ -17,10 +17,16 @@ class EntregaForm(ModelForm):
             'taxi': Select(attrs={'class':"form-control"}),
         }
 
+class EntregaFormImagen(ModelForm):
+    class Meta:
+        model = Entrega
+        fields = ['imagen']
+
+
 class ConceptoForm(ModelForm):
     class Meta:
         model = Concepto
-        fields = ['fecha','tipo', 'valor']
+        fields = ['fecha','tipo', 'valor', 'imagen']
 
         widgets = {
             'fecha': SelectDateWidget(attrs={'class':"form-control"},years=range(datetime.date.today().year-1, datetime.date.today().year+1)),

@@ -3,69 +3,81 @@ import json
 import random
 
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import DetailView, DeleteView
 from django.views.generic.base import View
 from django.views.generic.edit import CreateView
 
-from taxis.models import Taxi
+from taxis.models import Taxi,Portero
 from users.mixin import LoginRequiredMixin
-from .forms import EntregaForm, ConceptoForm
-from .models import Entrega, Concepto, ConceptoTipo
+from .forms import EntregaForm, ConceptoForm, EntregaFormImagen
+from .models import Entrega, Concepto
 
 
 class EntregaUpdateAtributos(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        current_user = self.request.user
-        # new_token = random.randint(10000, 99999)
-        new_token = 11111
+        id_ent = self.request.POST.get("id_ent")
+        entrega = get_object_or_404(Entrega, id=id_ent)
+        if self.request.is_ajax():
+            current_user = self.request.user
+            new_token = random.randint(10000, 99999)
 
-        if current_user.is_authenticated():
-            id_ent = self.request.POST.get("id_ent")
-            entrega = get_object_or_404(Entrega, id=id_ent)
+            if current_user.is_authenticated():
 
-            if request.POST.get("tipo_update") == "validar_token":
-                token = request.POST.get("num_token")
+                if request.POST.get("tipo_update") == "validar_token":
+                    token = request.POST.get("num_token")
 
-                if entrega.token == int(token):
-                    entrega.actual_poseedor = current_user
+                    if entrega.token == int(token):
+                        entrega.actual_poseedor = current_user
 
-                    if entrega.taxi.es_administrador(current_user):
-                        entrega.status = 3
-                        entrega.token = new_token
-                        entrega.save()
+                        if entrega.taxi.es_administrador(current_user):
+                            entrega.status = 3
+                            entrega.token = new_token
+                            entrega.save()
 
-                    if entrega.taxi.es_propietario(current_user):
-                        entrega.status = 4
-                        entrega.token = new_token
-                        entrega.save()
+                        if entrega.taxi.es_propietario(current_user):
+                            entrega.status = 4
+                            entrega.token = new_token
+                            entrega.save()
 
-            if request.POST.get("tipo_update") == "siguiente_estado":
+                        if Portero.objects.filter(user=current_user).exists():
+                            entrega.status = 7
+                            entrega.token = new_token
+                            entrega.save()
 
-                if entrega.get_es_mi_entrega(current_user):
-                    if entrega.status == "1":
-                        token = new_token
-                        entrega.token = token
-                        entrega.status = 2
-                        entrega.save()
+                if request.POST.get("tipo_update") == "siguiente_estado":
 
-                if entrega.get_es_mi_entrega_administrado(current_user):
-                    if entrega.actual_poseedor == current_user:
-                        token = new_token
-                        entrega.token = token
-                        entrega.status = 5
-                        entrega.save()
+                    if entrega.get_es_mi_entrega(current_user):
+                        if entrega.status == "1":
+                            token = new_token
+                            entrega.token = token
+                            entrega.status = 2
+                            entrega.save()
 
-                if entrega.get_es_mi_entrega_propietario(current_user):
-                    if entrega.actual_poseedor == current_user:
-                        entrega.status = 6
-                        entrega.save()
+                    if entrega.get_es_mi_entrega_administrado(current_user):
+                        if entrega.actual_poseedor == current_user:
+                            token = new_token
+                            entrega.token = token
+                            entrega.status = 5
+                            entrega.save()
 
-            if self.request.is_ajax():
-                print("Acepto Entrega o Valido Token")
-                return JsonResponse({"result": "Entrega Aceptada"})
+                    if entrega.get_es_mi_entrega_propietario(current_user):
+                        if entrega.actual_poseedor == current_user:
+                            entrega.status = 6
+                            entrega.save()
 
+            return JsonResponse({"result": "Entrega Aceptada"})
+        else:
+            form = EntregaFormImagen(request.POST, request.FILES)
+            form.instance = entrega
+            if form.is_valid():
+                # file is saved
+                form.save()
+            else:
+                form = EntregaFormImagen()
+                return render(request, entrega.get_absolute_url(), {'image_entrega': form})
         return redirect(entrega)
 
 
@@ -82,11 +94,13 @@ class EntregaListView(LoginRequiredMixin, View):
             fecha_ultima_actualizacion_lista_servidor = '-1'
             context = ''
             actualizar = False
+            usuario=self.request.user
 
             try:
+
                 if tipo_lista == "mis_entregas":
                     fecha_ultima_actualizacion_lista_servidor = str(
-                        Entrega.objects.get_mis_entregas(self.request.user).select_related("taxi").latest(
+                        Entrega.objects.get_mis_entregas(usuario).select_related("taxi").latest(
                             "timespam_update").timespam_update)
                     if fecha_ultima_actualizacion_lista_servidor != fecha_ultima_actualizacion_lista_cliente:
                         context = Entrega.objects.get_mis_entregas(self.request.user).select_related("taxi")
@@ -94,7 +108,7 @@ class EntregaListView(LoginRequiredMixin, View):
 
                 if tipo_lista == "mis_administrados":
                     fecha_ultima_actualizacion_lista_servidor = str(
-                        Entrega.objects.get_mis_entregas_administrados(self.request.user).select_related("taxi").latest(
+                        Entrega.objects.get_mis_entregas_administrados(usuario).select_related("taxi").latest(
                             "timespam_update").timespam_update)
                     if fecha_ultima_actualizacion_lista_servidor != fecha_ultima_actualizacion_lista_cliente:
                         context = Entrega.objects.get_mis_entregas_administrados(self.request.user).select_related(
@@ -103,12 +117,26 @@ class EntregaListView(LoginRequiredMixin, View):
 
                 if tipo_lista == "mis_propios":
                     fecha_ultima_actualizacion_lista_servidor = str(
-                        Entrega.objects.get_mis_entregas_propios(self.request.user).select_related("taxi").latest(
+                        Entrega.objects.get_mis_entregas_propios(usuario).select_related("taxi").latest(
                             "timespam_update").timespam_update)
 
                     if fecha_ultima_actualizacion_lista_servidor != fecha_ultima_actualizacion_lista_cliente:
                         context = Entrega.objects.get_mis_entregas_propios(self.request.user).select_related("taxi")
                         actualizar = True
+
+                if Portero.objects.filter(user=usuario).exists():
+                    if tipo_lista == "portero":
+                        fecha_ultima_actualizacion_lista_servidor = str(
+                            Entrega.objects.filter(
+                                Q(status=2) |
+                                Q(status=7)
+                            ).latest("timespam_update").timespam_update)
+                        if fecha_ultima_actualizacion_lista_servidor != fecha_ultima_actualizacion_lista_cliente:
+                            context = Entrega.objects.filter(
+                                Q(status=2) |
+                                Q(status=7)
+                            ).select_related("taxi")
+                            actualizar = True
 
                 if actualizar:
                     for x in context:
@@ -138,8 +166,10 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         new_concepto = ConceptoForm
+        image_entrega = EntregaFormImagen
         contexto = super().get_context_data(**kwargs)
         contexto["form_new_concepto"] = new_concepto
+        contexto["image_entrega"] = image_entrega
         return contexto
 
     def get(self, request, *args, **kwargs):
@@ -168,6 +198,14 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                 mostrar_quien_tiene_entrega = False  # listo
                 siguiente_estado = 0
 
+                if Portero.objects.filter(user=current_user).exists():
+                    if entrega.status == "2":
+                        pedit_token = True
+                        siguiente_estado = 7
+
+                    if entrega.status == "7":
+                        mostrar_token = True
+
                 if entrega.get_es_mi_entrega(current_user):
                     if entrega.status == "1":
                         mostrar_boton_aceptar = True
@@ -177,13 +215,16 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                     if entrega.status == "2":
                         mostrar_token = True
 
-                    if entrega.status == "2":
-                        mostrar_token = True
 
                 if entrega.get_es_mi_entrega_administrado(current_user):
                     mostrar_quien_tiene_entrega = True
+
+                    if entrega.status == "7":
+                        pedit_token = True
+
                     if entrega.status == "5":
                         mostrar_token = True
+
                     if entrega.status == "2":
                         pedit_token = True
                         siguiente_estado = 3
@@ -196,6 +237,10 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
 
                 if entrega.get_es_mi_entrega_propietario(current_user):
                     mostrar_quien_tiene_entrega = True
+
+                    if entrega.status == "7":
+                        pedit_token = True
+
                     if entrega.status == "2":
                         pedit_token = True
                         siguiente_estado = 4
@@ -210,8 +255,13 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                         if entrega.user == current_user:
                             entrega_editable = True
 
+
                 json_list_conceptos = []
                 for x in entrega.conceptos.all():
+                    url_imagen = "-1"
+                    if x.imagen:
+                        url_imagen = x.imagen.url
+
                     object_json_list = {
                         "pk": x.id,
                         "tipo": x.tipo.nombre,
@@ -219,8 +269,14 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                         "fecha": x.fecha.strftime("%m/%Y/%d"),
                         "valor": str(x.valor),
                         "url_delete": reverse("entregas:concepto-delete"),
+                        "url_imagen": url_imagen
                     }
+
                     json_list_conceptos.append(object_json_list)
+
+                entrega_url_imagen = "-1"
+                if entrega.imagen:
+                    entrega_url_imagen=entrega.imagen.url
 
                 object_json = {
                     "estado": entrega.get_status_display(),
@@ -242,6 +298,8 @@ class EntregaDetailView(LoginRequiredMixin, DetailView):
                     "mostrar_boton_aceptar": mostrar_boton_aceptar,
                     "conceptos": json_list_conceptos,
                     "ultimo_update_entrega_fecha": str(entrega.timespam_update),
+                    "url_imagen": entrega_url_imagen
+
                 }
                 return JsonResponse(json.dumps(object_json), safe=False)
 
@@ -288,32 +346,13 @@ class ConceptoCreateView(LoginRequiredMixin, CreateView):
     model = Concepto
     form_class = ConceptoForm
 
-    def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        id_ent = self.request.POST.get("id_ent")
-        entrega = get_object_or_404(Entrega, id=id_ent)
-        conceptos_eliminables = self.request.POST.get("conceptos_eliminables")
-
-        if form.is_valid():
-            dia = int(self.request.POST.get("fecha_day"))
-            mes = int(self.request.POST.get("fecha_month"))
-            ano = int(self.request.POST.get("fecha_year"))
-            valor = int(self.request.POST.get("valor"))
-            tipo_id = int(self.request.POST.get("tipo"))
-
-            fecha = datetime.datetime(year=ano, month=mes, day=dia)
-            tipo = get_object_or_404(ConceptoTipo, id=tipo_id)
-            new_concepto = Concepto(fecha=fecha, entrega=entrega, valor=valor, tipo=tipo)
-            new_concepto.save()
-
-            return redirect(entrega)
-
-        context = {
-            "form_new_concepto": form,
-            "object": entrega,
-            "conceptos_eliminables": conceptos_eliminables,
-        }
-        return render(request, "entregas/entrega_detail.html", context)
+    def form_valid(self, form):
+        instance = form.instance
+        ent_id = form.data['entrega_id']
+        entrega = get_object_or_404(Entrega, id=ent_id)
+        instance.entrega = entrega
+        self.success_url = entrega.get_absolute_url()
+        return super().form_valid(form)
 
 
 class ConceptoDeleteView(LoginRequiredMixin, DeleteView):

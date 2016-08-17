@@ -8,26 +8,35 @@
     <script src="https://npmcdn.com/babel-core@5.8.38/browser.min.js"></script>
 
     <script src="{% static 'js/dist/react_mixins.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/dist/entrega_detalle.min.js' %}"></script>
-{#    <script type="text/babel" src="{% static 'js/deve/entrega_detalle.jsx' %}"></script>#}
+    {#    <script type="text/javascript" src="{% static 'js/dist/entrega_detalle.min.js' %}"></script>#}
+    <script type="text/babel" src="{% static 'js/deve/entrega_detalle.jsx' %}"></script>
 
 
     <div id="detalle-entrega" class="col-sm-12">
 
     </div>
     <div id="div_conceptos" class="row">
-        <div class="col-xs-10 col-md-4">
+        <div class="col-xs-10 col-sm-4 col-xs-offset-1">
+                <h4>Subir Imagen Entrega</h4>
+                <form id="form_new_concepto" enctype="multipart/form-data"
+                      action="{% url 'entregas:entrega-update-atributos' %}"
+                      method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="id_ent" value="{{ object.id }}">
+                    {{ image_entrega.as_p }}
+                    <input id="save_concepto" type="submit" value="Guardar"/>
+                </form>
         </div>
-        <div class="col-xs-10 col-md-6 col-xs-offset-1">
+        <div class="col-xs-10 col-sm-6 col-sm-offset-0 col-xs-offset-1">
             <h4>Nuevo Concepto</h4>
-
-            <form id="form_new_concepto" action="{% url 'entregas:concepto-create' %}" method="POST">
+            <form id="form_new_concepto" enctype="multipart/form-data" action="{% url 'entregas:concepto-create' %}"
+                  method="POST">
                 {% csrf_token %}
-                <input type="hidden" name="conceptos_eliminables" value="{{ conceptos_eliminables }}">
-                <input type="hidden" name="id_ent" value="{{ object.id }}">
+                <input type="hidden" name="entrega_id" value="{{ object.id }}">
                 {{ form_new_concepto.as_p }}
                 <input id="save_concepto" type="submit" value="Guardar"/>
             </form>
         </div>
+
     </div>
 {% endblock %}

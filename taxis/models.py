@@ -20,6 +20,12 @@ class Propietario(models.Model):
     def __str__(self):
         return self.user.username
 
+class Portero(models.Model):
+    user = models.OneToOneField(User, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.user.username
+
 
 class Administrador(models.Model):
     user = models.OneToOneField(User, on_delete=models.PROTECT)

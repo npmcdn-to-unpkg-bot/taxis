@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q, Value, CharField
 
+from project.settings import MEDIA_URL
 from taxis.models import Taxi, Taxista
 
 from django.contrib.auth.models import User
@@ -20,14 +21,15 @@ STATUS_CHOICES = (
     ('4', 'Recibido - Prop'),
     ('5', 'Aceptada - Admin'),
     ('6', 'Aceptada - Prop'),
-    ('7', 'Rechazada'),
+    ('7', 'En Portería'),
 )
 
 def entrega_upload_to(instance, filename):
-    id_user = instance.conductor.user.id
+    username = instance.conductor.username
     basename, file_extention = filename.split(".")
-    new_filename = "%s_%s.%s" % (instance.id, basename, file_extention)
-    return "user/entrega/%s/%s" % (id_user, new_filename)
+    new_filename = "Entrega_%s_%s.%s" % (instance.id, basename, file_extention)
+    return "%s/entregas/entrega_%s/%s" % (username, instance.id, new_filename)
+
 
 class EntregaoManager(models.Manager):
     def get_queryset(self):
@@ -109,6 +111,12 @@ class ConceptoManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by("fecha")
 
+def concepto_upload_to(instance, filename):
+    username = instance.entrega.conductor.username
+    tipo_concepto = instance.tipo
+    basename, file_extention = filename.split(".")
+    new_filename = "%s_%s.%s" % (tipo_concepto, basename, file_extention)
+    return "%s/entregas/entrega_%s/%s" % (username,instance.entrega.id, new_filename)
 
 class Concepto(models.Model):
     entrega = models.ForeignKey(Entrega, on_delete=models.CASCADE, related_name="conceptos")
@@ -117,7 +125,7 @@ class Concepto(models.Model):
     timespam_update = models.DateTimeField(auto_now_add=False, auto_now=True)
     descripcion = models.TextField(max_length=200, blank=True, null=True)
     fecha = models.DateField(default=timezone.now)
-    imagen = models.ImageField(blank=True, null=True)
+    imagen = models.ImageField(blank=True, null=True, upload_to=concepto_upload_to)
     valor = models.DecimalField(max_digits=10, decimal_places=2, default=0,validators=[MinValueValidator(Decimal('0.01'))])
 
     objects = ConceptoManager()
